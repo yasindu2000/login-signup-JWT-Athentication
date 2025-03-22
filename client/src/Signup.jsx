@@ -1,17 +1,39 @@
-import React from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import axios from 'axios'
 
 function Signup() {
+
+const [name, setName] = useState("");
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
+
+const handleSubmit = (e) =>{
+   
+    e.preventDefault()
+    axios.post("http://localhost:5000/register", {name, email, password})
+    .then(result => console.log(result))
+    .catch(err => console.log(err))
+
+
+
+}
+
+
+
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-2xl shadow-xl w-96">
-        <h2 className="text-2xl font-bold text-center text-gray-700 mb-6">Sign Up</h2>
-        <form>
+        <h2 className="text-2xl font-bold text-center text-gray-700 mb-6">
+          Sign Up
+        </h2>
+        <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-gray-600 text-sm mb-2">Name</label>
             <input
               type="text"
               placeholder="Enter your name"
+              onChange={(e) => setName(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
@@ -20,6 +42,7 @@ function Signup() {
             <input
               type="email"
               placeholder="Enter your email"
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
@@ -28,6 +51,7 @@ function Signup() {
             <input
               type="password"
               placeholder="Enter your password"
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
@@ -39,7 +63,10 @@ function Signup() {
           </button>
         </form>
         <p className="text-sm text-center text-gray-500 mt-4">
-          Already have an account? <Link to="/login" className="text-blue-500">Log in</Link>
+          Already have an account?{" "}
+          <Link to="/login" className="text-blue-500">
+            Log in
+          </Link>
         </p>
       </div>
     </div>
