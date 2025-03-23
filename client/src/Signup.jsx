@@ -1,21 +1,29 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from 'axios'
+
 
 function Signup() {
 
 const [name, setName] = useState("");
 const [email, setEmail] = useState("");
 const [password, setPassword] = useState("");
+const [error, setError] = useState("");
+const navigate = useNavigate()
 
 const handleSubmit = (e) =>{
    
     e.preventDefault()
     axios.post("http://localhost:5000/register", {name, email, password})
-    .then(result => console.log(result))
-    .catch(err => console.log(err))
-
-
+    .then(result => {
+      if (result.data === "Email already exists") {
+        setError("This email is already registered.");
+      } else {
+        console.log(result);
+        navigate("/login");
+      }
+    })
+    .catch((err) => console.log(err));
 
 }
 
@@ -27,6 +35,7 @@ const handleSubmit = (e) =>{
         <h2 className="text-2xl font-bold text-center text-gray-700 mb-6">
           Sign Up
         </h2>
+        {error && <p className="text-red-500 text-center">{error}</p>}
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-gray-600 text-sm mb-2">Name</label>
