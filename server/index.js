@@ -1,6 +1,7 @@
 const express = require ('express');
 const mongoose = require('mongoose')
 const cors = require('cors');
+const bcrypt = require("bcrypt");
 const EmployeeModel = require ('./model/UserModel')
 
 const app = express();
@@ -13,24 +14,18 @@ mongoose.connect("mongodb://localhost:27017/employee")
     console.log("DB Connected")
 }).catch((err)=> console.log(err))
 
+
 app.post("/register", (req, res)=>{
  
     const {name, email, password} = req.body;
-    EmployeeModel.findOne({email : email})
-    .then(user => {
-        if(user){
-            res.json("Already have an account")
-        }else{
-            EmployeeModel.create({
-                name:name,
-                email:email,
-                password: password
-            }).then(result => {
-                res.json(result);
-            }).catch(err => res.json(err))
-        }
-    }).catch(err => res.json(err))
 
+    bcrypt.hash(password, 10)
+   .then(hash => {
+
+    EmployeeModel.create({name, email, password: hash})
+    .then(employees => res.json(employees))
+    .catch(err => res.json(err))
+   }).catch(err => console.log(err.message))
     
     
 
@@ -42,17 +37,22 @@ app.post("/login", (req, res)=>{
     const {email, password} = req.body;
     EmployeeModel.findOne({email: email})
     .then(user => {
+       if(user){
+        bcrypt.compare(password, user.password, (err, response)=>{
 
-        if(user){
-            if(user.password === password){
-                res.json("Success")
-            }else{
 
+            if(err) {
+    
                 res.json("the password is incorrect")
+    
+            } if(response){
+    
+                res.json("Success")
             }
+            })
         }else{
-
-            res.json("no record existed")
+          
+            res.json("No record existed")
         }
     })
 })
