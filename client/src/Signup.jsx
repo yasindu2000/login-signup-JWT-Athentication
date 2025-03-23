@@ -19,7 +19,7 @@ const handleSubmit = (e) =>{
       if (result.data === "Email already exists") {
         setError("This email is already registered.");
       } else {
-        console.log(result);
+        
         navigate("/login");
       }
     })

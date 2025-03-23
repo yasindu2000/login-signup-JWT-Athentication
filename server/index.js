@@ -2,11 +2,22 @@ const express = require ('express');
 const mongoose = require('mongoose')
 const cors = require('cors');
 const bcrypt = require("bcrypt");
-const EmployeeModel = require ('./model/UserModel')
+const jwt = require("jsonwebtoken");
+const EmployeeModel = require ('./model/UserModel');
+const cookieParser = require("cookie-parser")
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+
+    origin: ["http://localhost:5173"],
+    methods: ["GET", "POST"],
+    credentials: true
+
+
+
+}));
+app.use(cookieParser())
 
 mongoose.connect("mongodb://localhost:27017/employee")
 .then(()=>{
@@ -14,6 +25,22 @@ mongoose.connect("mongodb://localhost:27017/employee")
     console.log("DB Connected")
 }).catch((err)=> console.log(err))
 
+const verifyUser = (req, res, next)=>{
+
+    const token = req.cookies.token;
+   if(!token){
+
+    return res.json("the token was not available")
+   }else{
+
+    jwt.verify(token, "jwt-secret-key",(err, decode)=>{
+
+       if(err)  return res.json("token is wrong")
+        next()
+    })
+
+   }
+}
 
 app.post("/register", (req, res)=>{
  
@@ -27,7 +54,10 @@ app.post("/register", (req, res)=>{
     .catch(err => res.json(err))
    }).catch(err => console.log(err.message))
     
-    
+})
+
+app.get('/home', verifyUser ,(req, res)=>{
+return res.json("success")
 
 })
 
@@ -40,14 +70,13 @@ app.post("/login", (req, res)=>{
        if(user){
         bcrypt.compare(password, user.password, (err, response)=>{
 
-
-            if(err) {
-    
-                res.json("the password is incorrect")
-    
-            } if(response){
+             if(response){
+                const token = jwt.sign({email: user.email}, "jwt-secret-key",{expiresIn:"1d"})
+                res.cookie("token", token)
     
                 res.json("Success")
+            }else{
+                res.json("The password incorrect");
             }
             })
         }else{
